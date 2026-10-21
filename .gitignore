@@ -1,0 +1,7 @@
+secrets/
+.env
+*.jsonl.zst
+__pycache__/
+data/
+.venv/
+certstream-gcp.zip

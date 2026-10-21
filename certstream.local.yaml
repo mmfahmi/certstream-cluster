@@ -1,0 +1,18 @@
+# Local preview: use one reliable log so a failing third-party log cannot
+# continuously retry and flood the terminal.
+webserver:
+  listen_addr: "0.0.0.0"
+  listen_port: 8080
+  lite_url: "/"
+  full_url: "/full-stream"
+  domains_only_url: "/domains-only"
+
+general:
+  disable_default_logs: true
+  additional_logs:
+    - url: "https://ct.googleapis.com/logs/us1/argon2026h2"
+      operator: "Google"
+      description: "Google Argon2026h2 log"
+  drop_old_logs: true
+  recovery:
+    enabled: false

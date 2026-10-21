@@ -1,0 +1,4 @@
+websocket-client==1.8.0
+google-cloud-storage==2.18.2
+zstandard==0.23.0
+tldextract==5.1.2

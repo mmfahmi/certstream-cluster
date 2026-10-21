@@ -1,0 +1,58 @@
+services:
+  certstream:
+    image: 0rickyy0/certstream-server-go:latest
+    container_name: certstream
+    restart: unless-stopped
+    # Bound to the internal compose network only - no host port published,
+    # so it's never reachable from outside this box.
+    expose:
+      - "8080"
+    ports:
+      - "127.0.0.1:8081:8080"
+    volumes:
+      - ./certstream.local.yaml:/app/config/config.yaml:ro
+    mem_limit: 200m
+    mem_reservation: 100m
+    cpus: 0.5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - certnet
+
+  collector:
+    build: .
+    container_name: certstream-collector
+    restart: unless-stopped
+    depends_on:
+      - certstream
+    environment:
+      - CERTSTREAM_URL=ws://certstream:8080/
+      - GCS_BUCKET=${GCS_BUCKET:-}
+      - GCP_REGION=${GCP_REGION:-us-central1}
+      - FLUSH_INTERVAL_SECONDS=${FLUSH_INTERVAL_SECONDS:-300}
+      - FLUSH_MAX_RECORDS=${FLUSH_MAX_RECORDS:-50000}
+      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcs-key.json
+      - LOCAL_BUFFER_DIR=/data/buffer
+    volumes:
+      - ./secrets/gcs-key.json:/secrets/gcs-key.json:ro
+      - collector_buffer:/data/buffer
+    mem_limit: 150m
+    mem_reservation: 64m
+    cpus: 0.5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - certnet
+
+networks:
+  certnet:
+    driver: bridge
+
+volumes:
+  collector_buffer:
